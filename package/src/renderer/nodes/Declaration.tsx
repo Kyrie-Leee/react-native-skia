@@ -26,7 +26,7 @@ export const useDeclaration = <T,>(
 ) => {
   const onDeclare = useCallback<DeclarationCallback>(
     (ctx, children) => {
-      const materializedProps = materialize(ctx, props);
+      const materializedProps = materialize(props);
       return cb(materializedProps, children, ctx);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -23,7 +23,7 @@ export const useDrawing = <T,>(
 ) =>
   useCallback<DrawingCallback>(
     (ctx, children) => {
-      const materializedProps = materialize(ctx, props);
+      const materializedProps = materialize(props);
       cb(ctx, materializedProps, children);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,7 +46,7 @@ export const DrawingNode = (props: DrawingProps): SkNode<NodeType.Drawing> => ({
     if (skipProcessing) {
       onDraw(ctx, children);
     } else {
-      const drawingProps = materialize(ctx, newProps);
+      const drawingProps = materialize(newProps);
       const selectedPaint = selectPaint(ctx.paint, drawingProps);
       processPaint(selectedPaint, ctx.opacity, drawingProps);
       // to draw only once:

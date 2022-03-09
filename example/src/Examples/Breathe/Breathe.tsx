@@ -1,80 +1,34 @@
-import React from "react";
-import { Dimensions, StyleSheet } from "react-native";
-import type { SkiaReadonlyValue } from "@shopify/react-native-skia";
+import React, { useEffect } from "react";
 import {
-  useDerivedValue,
-  useLoop,
-  BlurMask,
-  vec,
   Canvas,
-  Circle,
-  Fill,
-  Group,
-  Paint,
-  polar2Canvas,
-  Easing,
+  Rect,
   mix,
+  useClockValue,
+  useValueEffect,
+  useValue,
 } from "@shopify/react-native-skia";
-
-const { width, height } = Dimensions.get("window");
-const c1 = "#61bea2";
-const c2 = "#529ca0";
-const R = width / 4;
-const center = vec(width / 2, height / 2 - 64);
-
-interface RingProps {
-  index: number;
-  progress: SkiaReadonlyValue<number>;
-}
-
-const Ring = ({ index, progress }: RingProps) => {
-  const theta = (index * (2 * Math.PI)) / 6;
-  const transform = useDerivedValue(
-    (p) => {
-      const { x, y } = polar2Canvas({ theta, radius: p * R }, { x: 0, y: 0 });
-      const scale = mix(p, 0.3, 1);
-      return [{ translateX: x }, { translateY: y }, { scale }];
-    },
-    [progress]
-  );
-
-  return (
-    <Group origin={center} transform={transform}>
-      <Circle c={center} r={R} color={index % 2 ? c1 : c2} />
-    </Group>
-  );
-};
+import {
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
 
 export const Breathe = () => {
-  const progress = useLoop({
-    duration: 3000,
-    easing: Easing.inOut(Easing.ease),
+  const clock = useClockValue();
+  const x = useValue(0);
+
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = withRepeat(withTiming(1, { duration: 3000 }), -1, true);
+  }, [progress]);
+
+  useValueEffect(clock, () => {
+    x.current = mix(progress.value, 0, 400);
   });
-
-  const transform = useDerivedValue(
-    (p) => [{ rotate: mix(p, -Math.PI, 0) }],
-    [progress]
-  );
-
-  const sigma = useDerivedValue((p) => mix(p, 40, 0), [progress]);
-
   return (
-    <Canvas style={styles.container} debug>
-      <Paint blendMode="screen">
-        <BlurMask style="solid" sigma={sigma} />
-      </Paint>
-      <Fill color="rgb(36,43,56)" />
-      <Group origin={center} transform={transform}>
-        {new Array(6).fill(0).map((_, index) => {
-          return <Ring key={index} index={index} progress={progress} />;
-        })}
-      </Group>
+    <Canvas style={{ flex: 1 }}>
+      <Rect x={x} y={100} width={10} height={10} color="red" />
     </Canvas>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

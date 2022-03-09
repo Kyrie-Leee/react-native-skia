@@ -3,9 +3,8 @@ import {
   Canvas,
   Rect,
   mix,
-  useClockValue,
-  useValueEffect,
   useValue,
+  useSharedValueEffect,
 } from "@shopify/react-native-skia";
 import {
   useSharedValue,
@@ -14,7 +13,6 @@ import {
 } from "react-native-reanimated";
 
 export const Breathe = () => {
-  const clock = useClockValue();
   const x = useValue(0);
 
   const progress = useSharedValue(0);
@@ -23,7 +21,7 @@ export const Breathe = () => {
     progress.value = withRepeat(withTiming(1, { duration: 3000 }), -1, true);
   }, [progress]);
 
-  useValueEffect(clock, () => {
+  useSharedValueEffect([progress], () => {
     x.current = mix(progress.value, 0, 400);
   });
   return (
